@@ -51,8 +51,16 @@ struct visitor_t {
             std::is_same<T, bool>::value ||
             std::is_same<T, std::int64_t>::value ||
             std::is_same<T, std::uint64_t>::value ||
+            std::is_same<T, long long>::value ||
+            std::is_same<T, unsigned long long>::value ||
             std::is_same<T, double>::value, "type mismatch");
-        node.AddMember(rapidjson::StringRef(name.data(), name.size()), value, allocator);
+        if constexpr (std::is_same<T, long long>::value) {
+            node.AddMember(rapidjson::StringRef(name.data(), name.size()), std::int64_t(value), allocator);
+        } else if constexpr (std::is_same<T, unsigned long long>::value) {
+            node.AddMember(rapidjson::StringRef(name.data(), name.size()), std::uint64_t(value), allocator);
+        } else {
+            node.AddMember(rapidjson::StringRef(name.data(), name.size()), value, allocator);
+        }
     }
 
     auto operator()(const string_view& value) -> void {

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.16.3)
 
 # Choose new behaviour for CMP0042.
 # See http://www.cmake.org/cmake/help/v3.0/policy/CMP0042.html for more details.
@@ -10,14 +10,21 @@ OPTION(ENABLE_TESTING "Build the library with tests" OFF)
 OPTION(ENABLE_EXAMPLES "Build examples" OFF)
 OPTION(ENABLE_BENCHMARKING "Build the library with benchmarks" OFF)
 OPTION(ENABLE_TESTING_THREADSAFETY "Build the thread-safety testing suite" OFF)
+OPTION(USE_BOOST_CMAKE "Link against a boost-cmake provided by parent project" OFF)
 
 set(LIBRARY_NAME blackhole)
 
 project(${LIBRARY_NAME})
 
-find_package(Boost 1.46 REQUIRED COMPONENTS
-    system
-    thread)
+if (USE_BOOST_CMAKE)
+    set(Boost_LIBRARIES
+        Boost::boost
+        Boost::system)
+else()
+    find_package(Boost 1.46 REQUIRED COMPONENTS
+        system
+        thread)
+endif()
 
 include_directories(BEFORE SYSTEM
     ${PROJECT_SOURCE_DIR}/foreign/libcds
@@ -25,7 +32,7 @@ include_directories(BEFORE SYSTEM
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-add_library(${LIBRARY_NAME} SHARED
+add_library(${LIBRARY_NAME} STATIC
     src/attribute.cpp
     src/config/factory.cpp
     src/config/json.cpp
@@ -88,14 +95,15 @@ endif ()
 # TODO: target_maximum_warnings(${LIBRARY_NAME})
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     target_compile_options(${LIBRARY_NAME} PRIVATE
-        -Weverything
+        # -Weverything
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
         -Wno-padded
         -Wno-shadow
         -Wno-weak-vtables
-        -pedantic
-        -pedantic-errors)
+        # -pedantic
+        # -pedantic-errors
+    )
 else ()
     set_target_properties(${LIBRARY_NAME} PROPERTIES
         COMPILE_FLAGS "-Wall"
