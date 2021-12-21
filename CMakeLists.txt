@@ -18,8 +18,11 @@ project(${LIBRARY_NAME})
 
 if (USE_BOOST_CMAKE)
     set(Boost_LIBRARIES
-        Boost::boost
-        Boost::system)
+        boost_thread
+        boost_system
+        boost_variant
+        boost_spirit
+        boost_asio)
 else()
     find_package(Boost 1.46 REQUIRED COMPONENTS
         system
@@ -77,11 +80,14 @@ add_library(${LIBRARY_NAME} STATIC
 # Set the Standard version.
 include(CheckCXXCompilerFlag)
 
+check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
-if (COMPILER_SUPPORTS_CXX14)
+if (COMPILER_SUPPORTS_CXX17)
+    add_definitions(-std=c++17)
+elseif (COMPILER_SUPPORTS_CXX14)
     add_definitions(-std=c++14)
 elseif (COMPILER_SUPPORTS_CXX11)
     add_definitions(-std=c++11)
@@ -90,6 +96,10 @@ elseif (COMPILER_SUPPORTS_CXX0X)
 else ()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif ()
+
+if (IOS)
+    add_definitions(-D__IOS__=1)
+endif()
 
 # Set maximum warnings level depending on compiler.
 # TODO: target_maximum_warnings(${LIBRARY_NAME})

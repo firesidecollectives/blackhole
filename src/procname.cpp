@@ -2,7 +2,7 @@
 
 #ifdef __linux__
 #   include <sys/types.h>
-#elif __APPLE__
+#elif __APPLE__ && ! __IOS__
 #   include <libproc.h>
 #endif
 
@@ -21,7 +21,7 @@ auto procname(pid_t pid) -> stdext::string_view {
 #ifdef __linux__
     (void)pid;
     return stdext::string_view(program_invocation_short_name, ::strlen(program_invocation_short_name));
-#elif __APPLE__
+#elif __APPLE__ && ! __IOS__
     static char path[PROC_PIDPATHINFO_MAXSIZE];
 
     if (::proc_name(pid, path, sizeof(path)) > 0) {
